@@ -107,12 +107,31 @@
     //
     // test if a specific column on this board contains a conflict
     hasColConflictAt: function(colIndex) {
-      return false; // fixme
+      var col = [];
+      var rowsLength = this.rows().length;
+
+      for (var i = 0; i < rowsLength; i++) {
+        col.push(this.get(i)[colIndex]);
+      }
+
+      var result = col.reduce(function(a, b) {
+        return a + b;
+      }, 0);
+
+      return result > 1 ? true : false;
     },
 
     // test if any columns on this board contain conflicts
     hasAnyColConflicts: function() {
-      return false; // fixme
+      var rowsLength = this.rows().length;
+
+      for (var i = 0; i < rowsLength; i++) {
+        if (this.hasColConflictAt(i)) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
 
