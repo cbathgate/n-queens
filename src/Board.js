@@ -164,7 +164,15 @@
 
     // test if any major diagonals on this board contain conflicts
     hasAnyMajorDiagonalConflicts: function() {
-      return false; // fixme
+      var matrixSize = this.rows().length - 1;
+      
+      for (var i = -matrixSize; i <= matrixSize; i++) {
+        if (this.hasMajorDiagonalConflictAt(i)) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
 
