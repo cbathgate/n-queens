@@ -13,7 +13,11 @@
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
-
+var Tree = function(board) {
+  this.value = board;
+  this.children = [];
+  this.size = board.rows().length;
+};
 
 window.findNRooksSolution = function(n) {
   if (n === 1) {
@@ -21,43 +25,64 @@ window.findNRooksSolution = function(n) {
   }
 
   var solution = new Board({n: n});
-  var blankArray = solution.rows()[0].slice();
-  var result = [];
   
   var createTree = function(matrix) {
     var newNode = new Board(matrix);
-    var setArray = blankArray.slice();
+    var size = newNode.rows().length;
 
-    for (var row = 0; row < newNode.rows().length; row++) {
-      for (var col = 0; col < newNode.rows().length; col++) {
-        var test = newNode.rows();
-        test[row][col] = 1;
-        test = new Board(test);
-        
-        if (!test.hasRowConflictAt(row) && !test.hasColConflictAt(col)) {
-          setArray[col] = 1;
-          newNode.set(row, setArray);
-          result = newNode;
-          return createTree(newNode.rows());
-        } else {
-          return;
+    for (var row = 0; row < size; row++) {
+      for (var col = 0; col < size; col++) {
+        if (newNode.rows()[row][col] === 0) {
+          var test = newNode.rows()[row].slice();
+
+          test[col] = 1;
+          var testBoard = new Board(matrix);
+          testBoard.set(row, test);
+          
+          if (!testBoard.hasRowConflictAt(row) && !testBoard.hasColConflictAt(col)) {
+            return createTree(testBoard.rows());
+          }
         }
       }
     }
-    // return matrix;
+    return matrix;
   };
 
-  createTree(solution.rows());
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
-  return result;
+  return createTree(solution.rows());
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  // var solutionCount = undefined; //fixme
+  var initialBoard = new Board({n: n});
+  var treeRoot = new Tree(initialBoard);
 
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
+  var createTree = function(node) {
+    for (var row = 0; row < node.size; row++) {
+      for (var col = 0; col < node.size; col++) {
+        if (node.value.rows()[row][col] === 0) {
+          var newBoard = new Board(node.value.rows());
+          var rowCopy = node.value.rows()[row].slice();
+
+          rowCopy[col] = 1;
+          newBoard.set(row, rowCopy);
+
+          if (!newBoard.hasAnyRowConflicts() && !newBoard.hasAnyColConflicts()) {
+            var newTreeNode = new Tree(newBoard);
+            node.children.push(newTreeNode);
+            createTree(newTreeNode);
+          }
+        }
+      }
+    }
+  };
+
+
+  createTree(treeRoot);
+  // console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
+  console.log(treeRoot);
+  return 1;
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
