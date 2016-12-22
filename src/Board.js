@@ -184,11 +184,11 @@
     hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
       var matrixSize = this.rows().length - 1;
 
-      var colIndex = majorDiagonalColumnIndexAtFirstRow >= matrixSize ?
-        matrixSize : majorDiagonalColumnIndexAtFirstRow;
+      var colIndex = minorDiagonalColumnIndexAtFirstRow >= matrixSize ?
+        matrixSize : minorDiagonalColumnIndexAtFirstRow;
 
-      var rowIndex = majorDiagonalColumnIndexAtFirstRow > matrixSize ?
-        majorDiagonalColumnIndexAtFirstRow - matrixSize : 0;
+      var rowIndex = minorDiagonalColumnIndexAtFirstRow > matrixSize ?
+        minorDiagonalColumnIndexAtFirstRow - matrixSize : 0;
 
       var diag = [];
       var limit = colIndex;
@@ -207,7 +207,15 @@
 
     // test if any minor diagonals on this board contain conflicts
     hasAnyMinorDiagonalConflicts: function() {
-      return false; // fixme
+      var matrixSize = this.rows().length - 1;
+
+      for (var i = 0; i <= 2 * matrixSize; i++) {
+        if (this.hasMinorDiagonalConflictAt(i)) {
+          return true;
+        }
+      }
+
+      return false;
     }
 
     /*--------------------  End of Helper Functions  ---------------------*/
