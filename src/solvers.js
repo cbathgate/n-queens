@@ -13,29 +13,19 @@
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
-var Tree = function(board) {
+var Tree = function(board, pieces) {
   this.value = board;
   this.children = [];
   this.size = board.rows().length;
+  this.pieces = pieces;
 };
 
 Tree.prototype.countDistintLeaves = function() {
   var countObj = {};
-
+  debugger;
   var storeLeaves = function(node) {
-    if (node.children.length === 0) {
-      var sum = 0;
-      node.value.rows().forEach(function(array) {
-        array.forEach(function(element) {
-          if (element === 1) {
-            sum++;
-          }
-        });
-      });
-
-      if (sum === node.size) {
-        countObj[JSON.stringify(node.value.rows())] = 1;
-      }
+    if (node.children.length === 0 && node.pieces === node.size) {
+      countObj[JSON.stringify(node.value.rows())] = 1;
     } else {
       node.children.forEach(function(element) {
         return storeLeaves(element);
@@ -83,29 +73,38 @@ window.findNRooksSolution = function(n) {
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
   var initialBoard = new Board({n: n});
-  var treeRoot = new Tree(initialBoard);
+  var treeRoot = new Tree(initialBoard, 0);
 
-  var createTree = function(node) {
-    for (var row = 0; row < node.size; row++) {
+  var createTree = function(node, usedRow, usedCol) { //, dontSearchRow, dontSearchCol) {
+    for (var row = 0; row < node.size; row++) { 
+      if (usedRow[row] === row) {
+        continue;
+      }
       for (var col = 0; col < node.size; col++) {
+        if (usedCol[col] === col) {
+          continue;
+        }
         if (node.value.rows()[row][col] === 0) {
           var newBoard = new Board(node.value.rows());
           var rowCopy = node.value.rows()[row].slice();
-
           rowCopy[col] = 1;
           newBoard.set(row, rowCopy);
 
           if (!newBoard.hasAnyRowConflicts() && !newBoard.hasAnyColConflicts()) {
-            var newTreeNode = new Tree(newBoard);
+            var newTreeNode = new Tree(newBoard, node.pieces);
+            var usedRowRecurs = _.extend({row: row}, usedRow);
+            var usedColRecurs = _.extend({col: col}, usedCol);
+
+            newTreeNode.pieces++;
             node.children.push(newTreeNode);
-            createTree(newTreeNode);
+            createTree(newTreeNode, usedRowRecurs, usedColRecurs);
           }
         }
       }
     }
   };
 
-  createTree(treeRoot);
+  createTree(treeRoot, {}, {});
   var solutionCount = treeRoot.countDistintLeaves();
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
   return solutionCount;
@@ -126,11 +125,17 @@ window.countNQueensSolutions = function(n) {
   // console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   // return solutionCount;
   var initialBoard = new Board({n: n});
-  var treeRoot = new Tree(initialBoard);
+  var treeRoot = new Tree(initialBoard, 0);
 
-  var createTree = function(node) {
+  var createTree = function(node, usedRow, usedCol) {
     for (var row = 0; row < node.size; row++) {
+      if (usedRow[row] === row) {
+        continue;
+      } 
       for (var col = 0; col < node.size; col++) {
+        if (usedCol[col] === col) {
+          continue;
+        } 
         if (node.value.rows()[row][col] === 0) {
           var newBoard = new Board(node.value.rows());
           var rowCopy = node.value.rows()[row].slice();
@@ -140,16 +145,20 @@ window.countNQueensSolutions = function(n) {
 
           if (!newBoard.hasAnyRowConflicts() && !newBoard.hasAnyColConflicts() &&
             !newBoard.hasAnyMajorDiagonalConflicts() && !newBoard.hasAnyMinorDiagonalConflicts()) {
-            var newTreeNode = new Tree(newBoard);
+            var newTreeNode = new Tree(newBoard, node.pieces);
+            var usedRowRecurs = _.extend({row: row}, usedRow);
+            var usedColRecurs = _.extend({col: col}, usedCol);
+
+            newTreeNode.pieces++;
             node.children.push(newTreeNode);
-            createTree(newTreeNode);
+            createTree(newTreeNode, usedRowRecurs, usedColRecurs);
           }
         }
       }
     }
   };
 
-  createTree(treeRoot);
+  createTree(treeRoot, {}, {});
   var solutionCount = treeRoot.countDistintLeaves();
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
